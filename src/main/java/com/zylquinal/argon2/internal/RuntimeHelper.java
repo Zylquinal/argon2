@@ -44,8 +44,8 @@ final class RuntimeHelper {
             libName += ".so";
         }
 
-        if (osArch.contains("amd64")) {
-            osArch = "x86_64";
+        if (osArch.contains("amd64") || osArch.contains("x86_64")) {
+            osArch = "x86-64";
         } else if (osArch.contains("i386") || osArch.contains("i86")) {
             osArch = "x86";
         }

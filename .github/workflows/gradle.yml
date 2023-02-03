@@ -29,6 +29,7 @@ jobs:
           arguments: build
       - uses: actions/upload-artifact@v3
         with:
-          name: artifact
+          name: artifact-${{ matrix.os }}
           path: |
-            build/libs/*.jar
+            build/libs/*
+            build/reports/*
