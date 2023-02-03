@@ -1,6 +1,5 @@
 package com.zylquinal.argon2.internal;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.foreign.*;
 import java.lang.invoke.MethodHandle;
@@ -20,12 +19,9 @@ final class RuntimeHelper {
     final static SegmentAllocator CONSTANT_ALLOCATOR =
             (size, align) -> MemorySegment.allocateNative(size, align, MemorySession.openImplicit());
 
-    static final boolean IS_JAR = new File(RuntimeHelper.class.getProtectionDomain().getCodeSource().getLocation().getPath())
-            .toString().contains(".jar!");
-
     static {
         try {
-            NativeUtils.loadLibraryFromJar("%s/libargon2".formatted(lib()));
+            NativeUtils.loadLibraryFromJar(lib());
         } catch (IOException e) {
             throw new RuntimeException("Failed to load libargon2 library");
         }
@@ -36,19 +32,25 @@ final class RuntimeHelper {
     private static String lib() {
         String osName = System.getProperty("os.name").toLowerCase();
         String osArch = System.getProperty("os.arch");
+        String libName = "libargon2";
         if (osName.contains("win")) {
             osName = "windows";
+            libName += ".dll";
         } else if (osName.contains("mac")) {
             osName = "darwin";
+            libName += ".dylib";
         } else if (osName.contains("linux")) {
             osName = "linux";
+            libName += ".so";
         }
 
         if (osArch.contains("amd64")) {
             osArch = "x86_64";
+        } else if (osArch.contains("i386") || osArch.contains("i86")) {
+            osArch = "x86";
         }
 
-        return "%s-%s".formatted(osName, osArch);
+        return "%s-%s/%s".formatted(osName, osArch, libName);
     }
     static <T> T requireNonNull(T obj, String symbolName) {
         if (obj == null) {
