@@ -17,6 +17,7 @@ import static com.zylquinal.argon2.internal.argon2_h.argon2_hash;
 record Argon2Impl(ArgonVariant variant, ArgonVersion version, int iterations, int memory, int parallelism,
                          int hashLength) implements Argon2 {
 
+    private static final MemorySegment nullAddress = MemorySegment.allocateNative(0, MemorySession.global());
     private static final Base64.Encoder encoder = Base64.getEncoder().withoutPadding();
 
     @Override
@@ -27,11 +28,14 @@ record Argon2Impl(ArgonVariant variant, ArgonVersion version, int iterations, in
     private byte[] hashRaw(int iterations, int memory, int parallelism, byte[] password, byte[] salt, int hashLength, ArgonVersion version, ArgonVariant variant) {
         try (MemorySession session = MemorySession.openConfined()) {
             MemorySegment passwordAddress = MemorySegment.allocateNative(password.length, session);
-            passwordAddress.asByteBuffer().put(password);
+            for (int i = 0; i < password.length; i++) {
+                passwordAddress.set(ValueLayout.OfByte.JAVA_BYTE, i, password[i]);
+            }
             MemorySegment saltAddress = MemorySegment.allocateNative(salt.length, session);
-            saltAddress.asByteBuffer().put(salt);
+            for (int i = 0; i < salt.length; i++) {
+                saltAddress.set(ValueLayout.OfByte.JAVA_BYTE, i, salt[i]);
+            }
             MemorySegment hashAddress = MemorySegment.allocateNative(hashLength, session);
-            MemorySegment nullAddress = MemorySegment.allocateNative(0, session);
             var result = argon2_hash(iterations, memory, parallelism, passwordAddress, password.length, saltAddress, salt.length, hashAddress,
                     hashLength, nullAddress, 0, variant.variant(), version.version());
             if (result != argon2_h.ARGON2_OK()) throw new ArgonException(ArgonStatus.of(result));

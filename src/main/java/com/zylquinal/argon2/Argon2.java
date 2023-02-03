@@ -107,6 +107,7 @@ public interface Argon2 {
      * @param encoded the encoded hash
      * @param data the password
      * @return true if the password matches the hash
+     * @throws IllegalArgumentException if the encoded hash is invalid
      */
     boolean verify(String encoded, byte[] data);
 
