@@ -19,19 +19,19 @@ public class Argon2Test {
 
     @Test
     public void testRaw() {
-        var raw = argon2.hashRaw(PASSWORD, SALT);
+        var raw = argon2.hashRaw(Arrays.copyOf(PASSWORD, PASSWORD.length), SALT);
         assert Arrays.equals(raw, RAW);
     }
 
     @Test
     public void testEncoded() {
-        var encoded = argon2.hashEncoded(PASSWORD, SALT);
+        var encoded = argon2.hashEncoded(Arrays.copyOf(PASSWORD, PASSWORD.length), SALT);
         assert encoded.equals(ENCODED);
     }
 
     @Test
     public void testVerify() {
-        assert argon2.verify(ENCODED, PASSWORD);
+        assert argon2.verify(ENCODED, Arrays.copyOf(PASSWORD, PASSWORD.length));
     }
 
 }

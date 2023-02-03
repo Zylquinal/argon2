@@ -9,11 +9,10 @@ import com.zylquinal.argon2.internal.argon2_h;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.MemorySession;
 import java.lang.foreign.ValueLayout;
-import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Base64;
 
 import static com.zylquinal.argon2.internal.argon2_h.argon2_hash;
-import static com.zylquinal.argon2.internal.argon2_h.argon2id_verify;
 
 record Argon2Impl(ArgonVariant variant, ArgonVersion version, int iterations, int memory, int parallelism,
                          int hashLength) implements Argon2 {
@@ -22,6 +21,10 @@ record Argon2Impl(ArgonVariant variant, ArgonVersion version, int iterations, in
 
     @Override
     public byte[] hashRaw(byte[] password, byte[] salt, int hashLength, ArgonVersion version) {
+        return hashRaw(iterations, memory, parallelism, password, salt, hashLength, version, variant);
+    }
+
+    private byte[] hashRaw(int iterations, int memory, int parallelism, byte[] password, byte[] salt, int hashLength, ArgonVersion version, ArgonVariant variant) {
         try (MemorySession session = MemorySession.openConfined()) {
             MemorySegment passwordAddress = MemorySegment.allocateNative(password.length, session);
             passwordAddress.asByteBuffer().put(password);
@@ -38,13 +41,16 @@ record Argon2Impl(ArgonVariant variant, ArgonVersion version, int iterations, in
 
     @Override
     public boolean verify(String encoded, byte[] password) {
-        try (MemorySession session = MemorySession.openConfined()) {
-            MemorySegment passwordAddress = MemorySegment.allocateNative(password.length, session);
-            passwordAddress.asByteBuffer().put(password);
-            MemorySegment encodedAddress = MemorySegment.allocateNative(encoded.length(), session);
-            encodedAddress.asByteBuffer().put(encoded.getBytes(StandardCharsets.US_ASCII));
-            return argon2id_verify(encodedAddress, passwordAddress, password.length) == argon2_h.ARGON2_OK();
-        }
+        var parts = encoded.split("\\$");
+        if (parts.length != 6) throw new IllegalArgumentException("Invalid encoded hash");
+        var variant = ArgonVariant.of(parts[1]);
+        var version = ArgonVersion.of(Integer.parseInt(parts[2].substring(2)));
+        var memory = Integer.parseInt(parts[3].substring(2, parts[3].indexOf(',')));
+        var iterations = Integer.parseInt(parts[3].substring(parts[3].indexOf(',') + 3, parts[3].lastIndexOf(',')));
+        var parallelism = Integer.parseInt(parts[3].substring(parts[3].lastIndexOf(',') + 3));
+        var salt = Base64.getDecoder().decode(parts[4]);
+        var hash = Base64.getDecoder().decode(parts[5]);
+        return Arrays.equals(hash, hashRaw(iterations, memory, parallelism, password, salt, hash.length, version, variant));
     }
 
     @Override
