@@ -9,7 +9,7 @@ An [argon2](https://github.com/P-H-C/phc-winner-argon2) binding using Java Forei
 
 ```java
 
-import com.zylquinal.argon2.Argon2;
+import com.zylquinal.argon2.*;
 
 public class Example {
 
@@ -18,6 +18,17 @@ public class Example {
         
         byte[] rawHash = argon2.hashRaw("password".getBytes(), "randomsalt".getBytes());
         String encodedHash = argon2.hashEncoded("password".getBytes(), "randomsalt".getBytes());
+
+        rawHash = ArgonContext.builder()
+                .password("password".getBytes())
+                .salt("randomsalt")
+                .memoryCost(65536)
+                .iterations(2)
+                .parallelism(1)
+                .hashLength(32)
+                .flag(ArgonFlag.CLEAR_ALL)
+                .version(ArgonVersion.VERSION_13)
+                .hash(ArgonVariant.ARGON_2ID);
     }
     
 }

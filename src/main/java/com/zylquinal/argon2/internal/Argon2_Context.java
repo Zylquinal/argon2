@@ -2,6 +2,7 @@ package com.zylquinal.argon2.internal;
 
 import java.lang.foreign.*;
 import java.lang.invoke.VarHandle;
+
 public class Argon2_Context {
 
     static final  GroupLayout $struct$LAYOUT = MemoryLayout.structLayout(
@@ -59,7 +60,7 @@ public class Argon2_Context {
         Argon2_Context.outlen$VH.set(seg, x);
     }
     public static int outlen$get(MemorySegment seg, long index) {
-        return (int)Argon2_Context.outlen$VH.get(seg.asSlice(index*sizeof()));
+        return (int) Argon2_Context.outlen$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void outlen$set(MemorySegment seg, long index, int x) {
         Argon2_Context.outlen$VH.set(seg.asSlice(index*sizeof()), x);

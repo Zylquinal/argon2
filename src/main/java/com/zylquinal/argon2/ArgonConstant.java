@@ -1,6 +1,6 @@
 package com.zylquinal.argon2;
 
-public class ArgonConstant {
+public final class ArgonConstant {
 
     public static final int ARGON2_MIN_LANES = 1;
     public static final int ARGON2_MAX_LANES = 16777215;
