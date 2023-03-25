@@ -18,11 +18,11 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v3
-      - name: 'Set up JDK 19'
+      - name: 'Set up JDK 20'
         uses: oracle-actions/setup-java@v1
         with:
           website: jdk.java.net
-          release: 19
+          release: 20
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
         with:

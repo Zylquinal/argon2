@@ -1,4 +1,4 @@
-package com.zylquinal.argon2;
+package com.zylquinal.argon2.api;
 
 public final class ArgonConstant {
 

@@ -1,6 +1,6 @@
-package com.zylquinal.argon2.exception;
+package com.zylquinal.argon2.api.exception;
 
-import com.zylquinal.argon2.enumeration.ArgonStatus;
+import com.zylquinal.argon2.api.enumeration.ArgonStatus;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
