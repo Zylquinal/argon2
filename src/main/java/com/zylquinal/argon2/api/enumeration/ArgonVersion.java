@@ -1,4 +1,4 @@
-package com.zylquinal.argon2.enumeration;
+package com.zylquinal.argon2.api.enumeration;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

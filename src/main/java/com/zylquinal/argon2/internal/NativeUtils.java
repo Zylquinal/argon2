@@ -39,23 +39,20 @@ import java.util.Map;
  *
  * @see <a href="http://adamheinrich.com/blog/2012/how-to-load-native-jni-library-from-jar">http://adamheinrich.com/blog/2012/how-to-load-native-jni-library-from-jar</a>
  * @see <a href="https://github.com/adamheinrich/native-utils">https://github.com/adamheinrich/native-utils</a>
- *
  */
 public class NativeUtils {
 
+    public static final String NATIVE_FOLDER_PATH_PREFIX = "nativeutils";
+    public static final boolean IS_JAR = new File(NativeUtils.class.getProtectionDomain().getCodeSource().getLocation().getPath())
+            .toString().contains(".jar!");
     /**
      * The minimum length a prefix for a file has to have according to {@link File#createTempFile(String, String)}}.
      */
     private static final int MIN_PREFIX_LENGTH = 3;
-    public static final String NATIVE_FOLDER_PATH_PREFIX = "nativeutils";
-
     /**
      * Temporary directory which will contain the DLLs.
      */
     private static File temporaryDir;
-
-    public static final boolean IS_JAR = new File(NativeUtils.class.getProtectionDomain().getCodeSource().getLocation().getPath())
-            .toString().contains(".jar!");
 
     /**
      * Private constructor - this class will never be instanced
@@ -65,17 +62,17 @@ public class NativeUtils {
 
     /**
      * Loads library from current JAR archive
-     *
+     * <p>
      * The file from JAR is copied into system temporary directory and then loaded. The temporary file is deleted after
      * exiting.
      * Method uses String as filename because the pathname is "abstract", not system-dependent.
      *
      * @param path The path of file inside JAR as absolute path (beginning with '/'), e.g. /package/File.ext
-     * @throws IOException If temporary file creation or read/write operation fails
+     * @throws IOException              If temporary file creation or read/write operation fails
      * @throws IllegalArgumentException If source file (param path) does not exist
      * @throws IllegalArgumentException If the path is not absolute or if the filename is shorter than three characters
-     * (restriction of {@link File#createTempFile(java.lang.String, java.lang.String)}).
-     * @throws FileNotFoundException If the file could not be found inside the JAR.
+     *                                  (restriction of {@link File#createTempFile(java.lang.String, java.lang.String)}).
+     * @throws FileNotFoundException    If the file could not be found inside the JAR.
      */
     public static void loadLibraryFromJar(String path) throws IOException {
         // Obtain filename from path
@@ -125,7 +122,7 @@ public class NativeUtils {
     public static byte[] readFromResources(Path path) {
         var classLoader = NativeUtils.class.getClassLoader();
         if (IS_JAR) return readFromResourcesJar(path);
-        try(var inputStream  = classLoader.getResourceAsStream(path.toString())) {
+        try (var inputStream = classLoader.getResourceAsStream(path.toString())) {
             return inputStream != null ? inputStream.readAllBytes() : new byte[0];
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -149,9 +146,7 @@ public class NativeUtils {
             return FileSystems.getDefault()
                     .supportedFileAttributeViews()
                     .contains("posix");
-        } catch (FileSystemNotFoundException
-                 | ProviderNotFoundException
-                 | SecurityException e) {
+        } catch (FileSystemNotFoundException | ProviderNotFoundException | SecurityException e) {
             return false;
         }
     }

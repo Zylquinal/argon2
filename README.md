@@ -21,7 +21,7 @@ public class Example {
 
         rawHash = ArgonContext.builder()
                 .password("password".getBytes())
-                .salt("randomsalt")
+                .salt("randomsalt".getBytes())
                 .memoryCost(65536)
                 .iterations(2)
                 .parallelism(1)
