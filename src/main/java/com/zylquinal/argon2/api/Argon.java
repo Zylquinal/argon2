@@ -1,14 +1,18 @@
 package com.zylquinal.argon2.api;
 
-import com.zylquinal.argon2.api.enumeration.ArgonFlag;
-import com.zylquinal.argon2.api.enumeration.ArgonVariant;
-import com.zylquinal.argon2.api.enumeration.ArgonVersion;
 import com.zylquinal.argon2.api.exception.ArgonException;
+import lombok.experimental.Delegate;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public record Argon(ArgonConfig config, int iterations, int memoryCost, int parallelism, int hashLength, ArgonVersion version,
-                    ArgonFlag flat, ArgonVariant variant) {
+public class Argon {
+
+    @Delegate
+    private final ArgonConfig config;
+
+    private Argon(ArgonConfig config) {
+        this.config = config;
+    }
 
     /**
      * Hashes the given password using the given salt.
@@ -46,8 +50,9 @@ public record Argon(ArgonConfig config, int iterations, int memoryCost, int para
      * @throws ArgonException if the hash could not be computed
      */
     public ComputedHash hash(byte @NotNull [] password, byte @NotNull [] salt, byte @Nullable [] secret, byte @Nullable [] associatedData) {
-        byte[] rawHash = ArgonDirect.rawHash(password, salt, secret, associatedData, hashLength, memoryCost, parallelism, iterations, version, flat, variant);
-        return ComputedHash.of(rawHash, salt, config());
+        byte[] rawHash = ArgonDirect.rawHash(password, salt, secret, associatedData, hashLength(), memoryCost(), parallelism(),
+                iterations(), version(), flag(), variant());
+        return ComputedHash.of(rawHash, salt, config);
     }
 
     /**
@@ -86,7 +91,8 @@ public record Argon(ArgonConfig config, int iterations, int memoryCost, int para
      * @throws ArgonException if the hash could not be computed
      */
     public byte[] rawHash(byte @NotNull [] password, byte @NotNull [] salt, byte @Nullable [] secret, byte @Nullable [] associatedData) {
-        return ArgonDirect.rawHash(password, salt, secret, associatedData, hashLength, memoryCost, parallelism, iterations, version, flat, variant);
+        return ArgonDirect.rawHash(password, salt, secret, associatedData, hashLength(), memoryCost(), parallelism(),
+                iterations(), version(), flag(), variant());
     }
 
     /**
@@ -125,7 +131,7 @@ public record Argon(ArgonConfig config, int iterations, int memoryCost, int para
      * @throws ArgonException if the hash could not be computed
      */
     public boolean verify(@NotNull String encodedHash, byte @NotNull  [] password, byte @Nullable [] secret, byte @Nullable [] associatedData) {
-        return ArgonDirect.verify(encodedHash, password, secret, associatedData, flat);
+        return ArgonDirect.verify(encodedHash, password, secret, associatedData, flag());
     }
 
     /**
@@ -188,7 +194,8 @@ public record Argon(ArgonConfig config, int iterations, int memoryCost, int para
      * @throws ArgonException if the hash could not be computed
      */
     public boolean verify(byte @NotNull [] hash, byte @NotNull [] password, byte @NotNull [] salt, byte @Nullable [] secret, byte @Nullable [] associatedData) {
-        return ArgonDirect.verify(hash, password, salt, secret, associatedData, hashLength, memoryCost, parallelism, iterations, version, flat, variant);
+        return ArgonDirect.verify(hash, password, salt, secret, associatedData, hashLength(), memoryCost(), parallelism(),
+                iterations(), version(), flag(), variant());
     }
 
     /**
@@ -198,8 +205,7 @@ public record Argon(ArgonConfig config, int iterations, int memoryCost, int para
      * @return a new {@link Argon} instance
      */
     public static Argon of(ArgonConfig config) {
-        return new Argon(config, config.iterations(), config.memoryCost(), config.parallelism(), config.hashLength(),
-                config.version(), config.flag(), config.variant());
+        return new Argon(config);
     }
 
 }
