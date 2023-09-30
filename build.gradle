@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'com.zylquinal.argon2'
-version '2.1-SNAPSHOT'
+version '2.1.1-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -11,8 +11,8 @@ repositories {
 
 dependencies {
     implementation 'org.jetbrains:annotations:23.0.0'
-    compileOnly 'org.projectlombok:lombok:1.18.24'
-    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testImplementation 'de.mkammerer:argon2-jvm:2.11'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'

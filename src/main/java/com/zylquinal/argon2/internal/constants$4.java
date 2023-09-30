@@ -1,44 +1,18 @@
 package com.zylquinal.argon2.internal;
 
+import java.lang.invoke.VarHandle;
 
-import java.lang.foreign.FunctionDescriptor;
-import java.lang.foreign.MemorySegment;
-import java.lang.invoke.MethodHandle;
-
+import static java.lang.foreign.ValueLayout.PathElement;
 final class constants$4 {
 
-    static final FunctionDescriptor argon2_verify_ctx$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-            Constants$root.C_POINTER$LAYOUT,
-            Constants$root.C_POINTER$LAYOUT,
-            Constants$root.C_INT$LAYOUT
-    );
-    static final MethodHandle argon2_verify_ctx$MH = RuntimeHelper.downcallHandle(
-            "argon2_verify_ctx",
-            constants$4.argon2_verify_ctx$FUNC
-    );
-    static final FunctionDescriptor argon2_error_message$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
-            Constants$root.C_INT$LAYOUT
-    );
-    static final MethodHandle argon2_error_message$MH = RuntimeHelper.downcallHandle(
-            "argon2_error_message",
-            constants$4.argon2_error_message$FUNC
-    );
-    static final FunctionDescriptor argon2_encodedlen$FUNC = FunctionDescriptor.of(Constants$root.C_LONG_LONG$LAYOUT,
-            Constants$root.C_INT$LAYOUT,
-            Constants$root.C_INT$LAYOUT,
-            Constants$root.C_INT$LAYOUT,
-            Constants$root.C_INT$LAYOUT,
-            Constants$root.C_INT$LAYOUT,
-            Constants$root.C_INT$LAYOUT
-    );
-    static final MethodHandle argon2_encodedlen$MH = RuntimeHelper.downcallHandle(
-            "argon2_encodedlen",
-            constants$4.argon2_encodedlen$FUNC
-    );
-    static final MemorySegment NULL$ADDR = MemorySegment.ofAddress(0L);
     // Suppresses default constructor, ensuring non-instantiability.
-    private constants$4() {
-    }
+    private constants$4() {}
+    static final VarHandle const$0 = constants$1.const$5.varHandle(PathElement.groupElement("lanes"));
+    static final VarHandle const$1 = constants$1.const$5.varHandle(PathElement.groupElement("threads"));
+    static final VarHandle const$2 = constants$1.const$5.varHandle(PathElement.groupElement("version"));
+    static final VarHandle const$3 = constants$1.const$5.varHandle(PathElement.groupElement("allocate_cbk"));
+    static final VarHandle const$4 = constants$1.const$5.varHandle(PathElement.groupElement("free_cbk"));
+    static final VarHandle const$5 = constants$1.const$5.varHandle(PathElement.groupElement("flags"));
 }
 
 

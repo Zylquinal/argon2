@@ -1,83 +1,18 @@
 package com.zylquinal.argon2.internal;
 
-import java.lang.foreign.FunctionDescriptor;
-import java.lang.invoke.MethodHandle;
+import java.lang.invoke.VarHandle;
 
+import static java.lang.foreign.ValueLayout.PathElement;
 final class constants$2 {
 
-    static final FunctionDescriptor argon2id_hash_raw$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-            Constants$root.C_INT$LAYOUT,
-            Constants$root.C_INT$LAYOUT,
-            Constants$root.C_INT$LAYOUT,
-            Constants$root.C_POINTER$LAYOUT,
-            Constants$root.C_LONG_LONG$LAYOUT,
-            Constants$root.C_POINTER$LAYOUT,
-            Constants$root.C_LONG_LONG$LAYOUT,
-            Constants$root.C_POINTER$LAYOUT,
-            Constants$root.C_LONG_LONG$LAYOUT
-    );
-    static final MethodHandle argon2id_hash_raw$MH = RuntimeHelper.downcallHandle(
-            "argon2id_hash_raw",
-            constants$2.argon2id_hash_raw$FUNC
-    );
-    static final FunctionDescriptor argon2_hash$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-            Constants$root.C_INT$LAYOUT,
-            Constants$root.C_INT$LAYOUT,
-            Constants$root.C_INT$LAYOUT,
-            Constants$root.C_POINTER$LAYOUT,
-            Constants$root.C_LONG_LONG$LAYOUT,
-            Constants$root.C_POINTER$LAYOUT,
-            Constants$root.C_LONG_LONG$LAYOUT,
-            Constants$root.C_POINTER$LAYOUT,
-            Constants$root.C_LONG_LONG$LAYOUT,
-            Constants$root.C_POINTER$LAYOUT,
-            Constants$root.C_LONG_LONG$LAYOUT,
-            Constants$root.C_INT$LAYOUT,
-            Constants$root.C_INT$LAYOUT
-    );
-    static final MethodHandle argon2_hash$MH = RuntimeHelper.downcallHandle(
-            "argon2_hash",
-            constants$2.argon2_hash$FUNC
-    );
-    static final FunctionDescriptor argon2i_verify$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-            Constants$root.C_POINTER$LAYOUT,
-            Constants$root.C_POINTER$LAYOUT,
-            Constants$root.C_LONG_LONG$LAYOUT
-    );
-    static final MethodHandle argon2i_verify$MH = RuntimeHelper.downcallHandle(
-            "argon2i_verify",
-            constants$2.argon2i_verify$FUNC
-    );
-    static final FunctionDescriptor argon2d_verify$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-            Constants$root.C_POINTER$LAYOUT,
-            Constants$root.C_POINTER$LAYOUT,
-            Constants$root.C_LONG_LONG$LAYOUT
-    );
-    static final MethodHandle argon2d_verify$MH = RuntimeHelper.downcallHandle(
-            "argon2d_verify",
-            constants$2.argon2d_verify$FUNC
-    );
-    static final FunctionDescriptor argon2id_verify$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-            Constants$root.C_POINTER$LAYOUT,
-            Constants$root.C_POINTER$LAYOUT,
-            Constants$root.C_LONG_LONG$LAYOUT
-    );
-    static final MethodHandle argon2id_verify$MH = RuntimeHelper.downcallHandle(
-            "argon2id_verify",
-            constants$2.argon2id_verify$FUNC
-    );
-    static final FunctionDescriptor argon2_verify$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-            Constants$root.C_POINTER$LAYOUT,
-            Constants$root.C_POINTER$LAYOUT,
-            Constants$root.C_LONG_LONG$LAYOUT,
-            Constants$root.C_INT$LAYOUT
-    );
-    static final MethodHandle argon2_verify$MH = RuntimeHelper.downcallHandle(
-            "argon2_verify",
-            constants$2.argon2_verify$FUNC
-    );
-    private constants$2() {
-    }
+    // Suppresses default constructor, ensuring non-instantiability.
+    private constants$2() {}
+    static final VarHandle const$0 = constants$1.const$5.varHandle(PathElement.groupElement("out"));
+    static final VarHandle const$1 = constants$1.const$5.varHandle(PathElement.groupElement("outlen"));
+    static final VarHandle const$2 = constants$1.const$5.varHandle(PathElement.groupElement("pwd"));
+    static final VarHandle const$3 = constants$1.const$5.varHandle(PathElement.groupElement("pwdlen"));
+    static final VarHandle const$4 = constants$1.const$5.varHandle(PathElement.groupElement("salt"));
+    static final VarHandle const$5 = constants$1.const$5.varHandle(PathElement.groupElement("saltlen"));
 }
 
 
