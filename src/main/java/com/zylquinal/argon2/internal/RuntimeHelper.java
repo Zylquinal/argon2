@@ -1,62 +1,49 @@
 package com.zylquinal.argon2.internal;
-
-import java.io.IOException;
-import java.lang.foreign.*;
+import java.lang.foreign.Linker;
+import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.GroupLayout;
+import java.lang.foreign.SymbolLookup;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.Arena;
+import java.lang.foreign.SegmentAllocator;
+import java.lang.foreign.ValueLayout;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.stream.Stream;
 
+import java.lang.foreign.AddressLayout;
+import java.lang.foreign.MemoryLayout;
+
+import static java.lang.foreign.Linker.*;
 import static java.lang.foreign.ValueLayout.*;
 
 final class RuntimeHelper {
 
-    final static SegmentAllocator CONSTANT_ALLOCATOR =
-            (size, align) -> MemorySegment.allocateNative(size, align, SegmentScope.auto());
     private static final Linker LINKER = Linker.nativeLinker();
     private static final ClassLoader LOADER = RuntimeHelper.class.getClassLoader();
     private static final MethodHandles.Lookup MH_LOOKUP = MethodHandles.lookup();
     private static final SymbolLookup SYMBOL_LOOKUP;
-    private static final SegmentAllocator THROWING_ALLOCATOR = (x, y) -> {
-        throw new AssertionError("should not reach here");
-    };
+    private static final SegmentAllocator THROWING_ALLOCATOR = (x, y) -> { throw new AssertionError("should not reach here"); };
+    static final AddressLayout POINTER = ValueLayout.ADDRESS.withTargetLayout(MemoryLayout.sequenceLayout(JAVA_BYTE));
+
+    final static SegmentAllocator CONSTANT_ALLOCATOR =
+            (size, align) -> Arena.ofAuto().allocate(size, align);
 
     static {
-        try {
-            NativeUtils.loadLibraryFromJar(lib());
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to load libargon2 library");
-        }
+        System.load("/home/zylquinal/IdeaProjects/argon2/src/main/resources/linux-x86-64/libargon2.so");
         SymbolLookup loaderLookup = SymbolLookup.loaderLookup();
         SYMBOL_LOOKUP = name -> loaderLookup.find(name).or(() -> LINKER.defaultLookup().find(name));
     }
 
     // Suppresses default constructor, ensuring non-instantiability.
-    private RuntimeHelper() {
-    }
-
-    private static String lib() {
-        String osName = System.getProperty("os.name").toLowerCase();
-        String osArch = System.getProperty("os.arch");
-        String libName = "libargon2";
-        if (osName.contains("win")) {
-            osName = "windows";
-            libName += ".dll";
-        } else if (osName.contains("mac")) {
-            osName = "darwin";
-            libName += ".dylib";
-        } else if (osName.contains("linux")) {
-            osName = "linux";
-            libName += ".so";
-        }
-
-        if (osArch.contains("amd64") || osArch.contains("x86_64")) {
-            osArch = "x86-64";
-        } else if (osArch.contains("i386") || osArch.contains("i86")) {
-            osArch = "x86";
-        }
-
-        return "%s-%s/%s".formatted(osName, osArch, libName);
-    }
+    private RuntimeHelper() {}
 
     static <T> T requireNonNull(T obj, String symbolName) {
         if (obj == null) {
@@ -66,7 +53,9 @@ final class RuntimeHelper {
     }
 
     static MemorySegment lookupGlobalVariable(String name, MemoryLayout layout) {
-        return SYMBOL_LOOKUP.find(name).map(symbol -> MemorySegment.ofAddress(symbol.address(), layout.byteSize(), symbol.scope())).orElse(null);
+        return SYMBOL_LOOKUP.find(name)
+                .map(s -> s.reinterpret(layout.byteSize()))
+                .orElse(null);
     }
 
     static MethodHandle downcallHandle(String name, FunctionDescriptor fdesc) {
@@ -93,7 +82,7 @@ final class RuntimeHelper {
         }
     }
 
-    static <Z> MemorySegment upcallStub(MethodHandle fiHandle, Z z, FunctionDescriptor fdesc, SegmentScope scope) {
+    static <Z> MemorySegment upcallStub(MethodHandle fiHandle, Z z, FunctionDescriptor fdesc, Arena scope) {
         try {
             fiHandle = fiHandle.bindTo(z);
             return LINKER.upcallStub(fiHandle, fdesc, scope);
@@ -102,14 +91,21 @@ final class RuntimeHelper {
         }
     }
 
-    static MemorySegment asArray(MemorySegment addr, MemoryLayout layout, int numElements, SegmentScope scope) {
-        return MemorySegment.ofAddress(addr.address(), numElements * layout.byteSize(), scope);
+    static MemorySegment asArray(MemorySegment addr, MemoryLayout layout, int numElements, Arena arena) {
+         return addr.reinterpret(numElements * layout.byteSize(), arena, null);
     }
 
     // Internals only below this point
 
     private static final class VarargsInvoker {
         private static final MethodHandle INVOKE_MH;
+        private final MemorySegment symbol;
+        private final FunctionDescriptor function;
+
+        private VarargsInvoker(MemorySegment symbol, FunctionDescriptor function) {
+            this.symbol = symbol;
+            this.function = function;
+        }
 
         static {
             try {
@@ -117,14 +113,6 @@ final class RuntimeHelper {
             } catch (ReflectiveOperationException e) {
                 throw new RuntimeException(e);
             }
-        }
-
-        private final MemorySegment symbol;
-        private final FunctionDescriptor function;
-
-        private VarargsInvoker(MemorySegment symbol, FunctionDescriptor function) {
-            this.symbol = symbol;
-            this.function = function;
         }
 
         static MethodHandle make(MemorySegment symbol, FunctionDescriptor function) {
@@ -136,7 +124,7 @@ final class RuntimeHelper {
             }
             mtype = mtype.appendParameterTypes(Object[].class);
             boolean needsAllocator = function.returnLayout().isPresent() &&
-                    function.returnLayout().get() instanceof GroupLayout;
+                                function.returnLayout().get() instanceof GroupLayout;
             if (needsAllocator) {
                 mtype = mtype.insertParameterTypes(0, SegmentAllocator.class);
             } else {
@@ -153,6 +141,46 @@ final class RuntimeHelper {
             } else {
                 throw new AssertionError("Cannot get here!");
             }
+        }
+
+        private Object invoke(SegmentAllocator allocator, Object[] args) throws Throwable {
+            // one trailing Object[]
+            int nNamedArgs = function.argumentLayouts().size();
+            assert(args.length == nNamedArgs + 1);
+            // The last argument is the array of vararg collector
+            Object[] unnamedArgs = (Object[]) args[args.length - 1];
+
+            int argsCount = nNamedArgs + unnamedArgs.length;
+            Class<?>[] argTypes = new Class<?>[argsCount];
+            MemoryLayout[] argLayouts = new MemoryLayout[nNamedArgs + unnamedArgs.length];
+
+            int pos = 0;
+            for (pos = 0; pos < nNamedArgs; pos++) {
+                argLayouts[pos] = function.argumentLayouts().get(pos);
+            }
+
+            assert pos == nNamedArgs;
+            for (Object o: unnamedArgs) {
+                argLayouts[pos] = variadicLayout(normalize(o.getClass()));
+                pos++;
+            }
+            assert pos == argsCount;
+
+            FunctionDescriptor f = (function.returnLayout().isEmpty()) ?
+                    FunctionDescriptor.ofVoid(argLayouts) :
+                    FunctionDescriptor.of(function.returnLayout().get(), argLayouts);
+            MethodHandle mh = LINKER.downcallHandle(symbol, f);
+            boolean needsAllocator = function.returnLayout().isPresent() &&
+                                            function.returnLayout().get() instanceof GroupLayout;
+            if (needsAllocator) {
+                mh = mh.bindTo(allocator);
+            }
+            // flatten argument list so that it can be passed to an asSpreader MH
+            Object[] allArgs = new Object[nNamedArgs + unnamedArgs.length];
+            System.arraycopy(args, 0, allArgs, 0, nNamedArgs);
+            System.arraycopy(unnamedArgs, 0, allArgs, nNamedArgs, unnamedArgs.length);
+
+            return mh.asSpreader(Object[].class, argsCount).invoke(allArgs);
         }
 
         private static Class<?> unboxIfNeeded(Class<?> clazz) {
@@ -177,46 +205,6 @@ final class RuntimeHelper {
             } else {
                 return clazz;
             }
-        }
-
-        private Object invoke(SegmentAllocator allocator, Object[] args) throws Throwable {
-            // one trailing Object[]
-            int nNamedArgs = function.argumentLayouts().size();
-            assert (args.length == nNamedArgs + 1);
-            // The last argument is the array of vararg collector
-            Object[] unnamedArgs = (Object[]) args[args.length - 1];
-
-            int argsCount = nNamedArgs + unnamedArgs.length;
-            Class<?>[] argTypes = new Class<?>[argsCount];
-            MemoryLayout[] argLayouts = new MemoryLayout[nNamedArgs + unnamedArgs.length];
-
-            int pos = 0;
-            for (pos = 0; pos < nNamedArgs; pos++) {
-                argLayouts[pos] = function.argumentLayouts().get(pos);
-            }
-
-            assert pos == nNamedArgs;
-            for (Object o : unnamedArgs) {
-                argLayouts[pos] = variadicLayout(normalize(o.getClass()));
-                pos++;
-            }
-            assert pos == argsCount;
-
-            FunctionDescriptor f = (function.returnLayout().isEmpty()) ?
-                    FunctionDescriptor.ofVoid(argLayouts) :
-                    FunctionDescriptor.of(function.returnLayout().get(), argLayouts);
-            MethodHandle mh = LINKER.downcallHandle(symbol, f);
-            boolean needsAllocator = function.returnLayout().isPresent() &&
-                    function.returnLayout().get() instanceof GroupLayout;
-            if (needsAllocator) {
-                mh = mh.bindTo(allocator);
-            }
-            // flatten argument list so that it can be passed to an asSpreader MH
-            Object[] allArgs = new Object[nNamedArgs + unnamedArgs.length];
-            System.arraycopy(args, 0, allArgs, 0, nNamedArgs);
-            System.arraycopy(unnamedArgs, 0, allArgs, nNamedArgs, unnamedArgs.length);
-
-            return mh.asSpreader(Object[].class, argsCount).invoke(allArgs);
         }
 
         private Class<?> promote(Class<?> c) {

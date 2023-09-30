@@ -18,14 +18,14 @@ import java.util.Base64;
 public class ArgonDirect {
 
     public static byte[] rawHash(byte @NotNull [] password, byte @NotNull [] salt, @NotNull ArgonConfig argonConfig) {
-        try (Arena arena = Arena.openConfined()) {
-            MemorySegment hashPtr = MemorySegment.allocateNative(argonConfig.hashLength(), arena.scope());
-            MemorySegment passwordPtr = MemorySegment.allocateNative(password.length, arena.scope());
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment hashPtr = arena.allocate(argonConfig.hashLength());
+            MemorySegment passwordPtr = arena.allocate(password.length);
             for (int i = 0; i < password.length; i++) {
                 passwordPtr.set(ValueLayout.JAVA_BYTE, i, password[i]);
             }
 
-            MemorySegment saltPtr = MemorySegment.allocateNative(salt.length, arena.scope());
+            MemorySegment saltPtr = arena.allocate(salt.length);
             for (int i = 0; i < salt.length; i++) {
                 saltPtr.set(ValueLayout.JAVA_BYTE, i, salt[i]);
             }
@@ -72,13 +72,12 @@ public class ArgonDirect {
      */
     public static byte[] rawHash(byte @NotNull [] password, byte @NotNull [] salt, byte[] secret, byte[] associatedData, int hashLength,
                           int memoryCost, int parallelism, int iterations, @NotNull ArgonVersion version, @NotNull ArgonFlag flag, @NotNull ArgonVariant variant) {
-        try (Arena arena = Arena.openConfined()) {
-            MemorySegment struct = Argon2_Context.layout(password, salt, secret, associatedData, hashLength, memoryCost, parallelism, iterations, version, flag, arena.scope());
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment struct = Argon2_Context.layout(password, salt, secret, associatedData, hashLength, memoryCost, parallelism, iterations, version, flag, arena);
             MemorySegment outAddress = Argon2_Context.out$get(struct);
-            MemorySegment out = MemorySegment.ofAddress(outAddress.address(), hashLength, arena.scope());
             int result = argon2_h.argon2_ctx(struct, variant.variant());
             if (result != 0) throw new ArgonException(ArgonStatus.of(result));
-            return out.toArray(ValueLayout.OfByte.JAVA_BYTE);
+            return outAddress.asSlice(0, hashLength).toArray(ValueLayout.OfByte.JAVA_BYTE);
         }
     }
 
