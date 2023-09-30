@@ -4,11 +4,11 @@ import com.zylquinal.argon2.api.enumeration.ArgonFlag;
 import com.zylquinal.argon2.api.enumeration.ArgonVersion;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.invoke.MethodHandle;
+import java.lang.foreign.Arena;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SegmentAllocator;
 import java.lang.invoke.VarHandle;
-import java.nio.ByteOrder;
-import java.lang.foreign.*;
-import static java.lang.foreign.ValueLayout.*;
 /**
  * {@snippet :
  * struct Argon2_Context {

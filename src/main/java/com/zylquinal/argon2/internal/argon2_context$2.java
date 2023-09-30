@@ -1,10 +1,5 @@
 package com.zylquinal.argon2.internal;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.VarHandle;
-import java.nio.ByteOrder;
-import java.lang.foreign.*;
-import static java.lang.foreign.ValueLayout.*;
 /**
  * {@snippet :
  * typedef struct Argon2_Context argon2_context;
