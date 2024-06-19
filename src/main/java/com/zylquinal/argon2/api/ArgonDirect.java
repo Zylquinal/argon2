@@ -74,7 +74,7 @@ public class ArgonDirect {
                           int memoryCost, int parallelism, int iterations, @NotNull ArgonVersion version, @NotNull ArgonFlag flag, @NotNull ArgonVariant variant) {
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment struct = Argon2_Context.layout(password, salt, secret, associatedData, hashLength, memoryCost, parallelism, iterations, version, flag, arena);
-            MemorySegment outAddress = Argon2_Context.out$get(struct);
+            MemorySegment outAddress = Argon2_Context.out(struct);
             int result = argon2_h.argon2_ctx(struct, variant.variant());
             if (result != 0) throw new ArgonException(ArgonStatus.of(result));
             return outAddress.asSlice(0, hashLength).toArray(ValueLayout.OfByte.JAVA_BYTE);

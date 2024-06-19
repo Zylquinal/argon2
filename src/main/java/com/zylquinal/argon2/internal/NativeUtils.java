@@ -26,6 +26,7 @@ package com.zylquinal.argon2.internal;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.foreign.SymbolLookup;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.*;
@@ -67,15 +68,15 @@ public class NativeUtils {
      * exiting.
      * Method uses String as filename because the pathname is "abstract", not system-dependent.
      *
-     * @param path The path of file inside JAR as absolute path (beginning with '/'), e.g. /package/File.ext
      * @throws IOException              If temporary file creation or read/write operation fails
      * @throws IllegalArgumentException If source file (param path) does not exist
      * @throws IllegalArgumentException If the path is not absolute or if the filename is shorter than three characters
      *                                  (restriction of {@link File#createTempFile(java.lang.String, java.lang.String)}).
      * @throws FileNotFoundException    If the file could not be found inside the JAR.
      */
-    public static void loadLibraryFromJar(String path) throws IOException {
+    public static void loadLibraryFromJar() throws IOException {
         // Obtain filename from path
+        String path = lib();
         String[] parts = path.split("/");
         String filename = (parts.length > 1) ? parts[parts.length - 1] : null;
 
@@ -86,7 +87,7 @@ public class NativeUtils {
 
         // Prepare temporary file
         if (temporaryDir == null) {
-            temporaryDir = createTempDirectory(NATIVE_FOLDER_PATH_PREFIX);
+            temporaryDir = createTempDirectory();
             temporaryDir.deleteOnExit();
         }
 
@@ -117,6 +118,30 @@ public class NativeUtils {
                 temp.deleteOnExit();
             }
         }
+    }
+
+    public static String lib() {
+        String osName = System.getProperty("os.name").toLowerCase();
+        String osArch = System.getProperty("os.arch");
+        String libName = "libargon2";
+        if (osName.contains("win")) {
+            osName = "windows";
+            libName += ".dll";
+        } else if (osName.contains("mac")) {
+            osName = "darwin";
+            libName += ".dylib";
+        } else if (osName.contains("linux")) {
+            osName = "linux";
+            libName += ".so";
+        }
+
+        if (osArch.contains("amd64") || osArch.contains("x86_64")) {
+            osArch = "x86-64";
+        } else if (osArch.contains("i386") || osArch.contains("i86")) {
+            osArch = "x86";
+        }
+
+        return "%s-%s/%s".formatted(osName, osArch, libName);
     }
 
     public static byte[] readFromResources(Path path) {
@@ -151,9 +176,9 @@ public class NativeUtils {
         }
     }
 
-    private static File createTempDirectory(String prefix) throws IOException {
+    private static File createTempDirectory() throws IOException {
         String tempDir = System.getProperty("java.io.tmpdir");
-        File generatedDir = new File(tempDir, prefix + System.nanoTime());
+        File generatedDir = new File(tempDir, NativeUtils.NATIVE_FOLDER_PATH_PREFIX + System.nanoTime());
 
         if (!generatedDir.mkdir())
             throw new IOException("Failed to create temp directory " + generatedDir.getName());
