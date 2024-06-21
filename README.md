@@ -35,11 +35,7 @@ dependencies {
 
 # Prebuilt binaries
 
-I only use linux on my machine, so it's impossible for me to build binaries for other platforms. If you want to use this 
-library on other platforms, you could build the library yourself or use the prebuilt binaries provided in the `resources`
-folder. You could build the library yourself by following the instructions from [here](https://github.com/P-H-C/phc-winner-argon2)
-
-> I am not the author of the prebuilt binaries, I use the binaries provided by [argon2-jvm](https://github.com/phxql/argon2-jvm)
+The binaries provided by `setup.sh` were built from this automated [release](https://github.com/Zylquinal/phc-winner-argon2/releases/tag/latest)
 
 # NativeUtils
 
