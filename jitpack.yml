@@ -1,2 +1,6 @@
 jdk:
   - openjdk22
+
+before_install:
+  - chmod +x setup.sh
+  - bash setup.sh
