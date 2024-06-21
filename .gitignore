@@ -42,3 +42,6 @@ bin/
 .DS_Store
 
 /.idea/
+/src/main/resources/
+phc-winner-argon2
+archive.zip

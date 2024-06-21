@@ -5,6 +5,9 @@ plugins {
 group 'com.zylquinal.argon2'
 version '2.1.2-SNAPSHOT'
 
+sourceCompatibility = JavaVersion.VERSION_22
+targetCompatibility = JavaVersion.VERSION_22
+
 repositories {
     mavenCentral()
 }

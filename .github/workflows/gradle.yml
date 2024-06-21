@@ -12,10 +12,7 @@ permissions:
 jobs:
   build:
 
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: 'Set up JDK 22'
@@ -23,6 +20,12 @@ jobs:
         with:
           website: jdk.java.net
           release: 22
+
+      - name: Setup phc-winner-argon2
+        run: |
+          chmod +x setup.sh
+          bash setup.sh
+
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
         with:
