@@ -1,5 +1,5 @@
 jdk:
-  - openjdk22
+  - openjdk24
 
 before_install:
   - chmod +x setup.sh

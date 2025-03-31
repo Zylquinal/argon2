@@ -14,12 +14,12 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: 'Set up JDK 22'
+      - uses: actions/checkout@v4
+      - name: 'Set up JDK 24'
         uses: oracle-actions/setup-java@v1
         with:
           website: jdk.java.net
-          release: 22
+          release: 24
 
       - name: Setup phc-winner-argon2
         run: |
@@ -30,7 +30,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           arguments: build
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: artifact-${{ matrix.os }}
           path: |
